@@ -12,7 +12,7 @@ SoftwareFJ/
 └── logs/
     └── sistema.log
 
-    class SoftwareFJError(Exception):
+class SoftwareFJError(Exception):
     """Excepción base del sistema."""
     pass
 
@@ -55,3 +55,26 @@ class OperacionNoPermitidaError(SoftwareFJError):
 class ParametroFaltanteError(SoftwareFJError):
     """Falta un parámetro requerido."""
     pass
+
+import logging
+import os
+
+
+def configurar_logger():
+
+    os.makedirs("logs", exist_ok=True)
+
+    logging.basicConfig(
+        filename="logs/sistema.log",
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        encoding="utf-8"
+    )
+
+
+def registrar_evento(mensaje):
+    logging.info(mensaje)
+
+
+def registrar_error(mensaje):
+    logging.error(mensaje)
