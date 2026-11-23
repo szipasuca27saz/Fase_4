@@ -94,3 +94,70 @@ class Entidad(ABC):
     @abstractmethod
     def mostrar_informacion(self):
         pass
+
+import re
+from entidades import Entidad
+from excepciones import ClienteInvalidoError
+
+
+class Cliente(Entidad):
+
+    def __init__(self, identificador, nombre, documento, correo, telefono):
+
+        super().__init__(identificador)
+
+        if not nombre or not nombre.strip():
+            raise ClienteInvalidoError(
+                "El nombre del cliente no puede estar vacío."
+            )
+
+        if not documento.isdigit():
+            raise ClienteInvalidoError(
+                "El documento debe contener solamente números."
+            )
+
+        patron_correo = r"^[^@]+@[^@]+\.[^@]+$"
+
+        if not re.match(patron_correo, correo):
+            raise ClienteInvalidoError(
+                "El correo electrónico no tiene un formato válido."
+            )
+
+        if not telefono.isdigit():
+            raise ClienteInvalidoError(
+                "El teléfono debe contener solamente números."
+            )
+
+        self.__nombre = nombre
+        self.__documento = documento
+        self.__correo = correo
+        self.__telefono = telefono
+
+    @property
+    def nombre(self):
+        return self.__nombre
+
+    @property
+    def documento(self):
+        return self.__documento
+
+    @property
+    def correo(self):
+        return self.__correo
+
+    @property
+    def telefono(self):
+        return self.__telefono
+
+    def mostrar_informacion(self):
+
+        return (
+            f"Cliente #{self.identificador} | "
+            f"Nombre: {self.nombre} | "
+            f"Documento: {self.documento} | "
+            f"Correo: {self.correo} | "
+            f"Teléfono: {self.telefono}"
+        )
+
+    def __str__(self):
+        return self.mostrar_informacion()
