@@ -666,3 +666,416 @@ class SistemaGestion:
 
         for reserva in self.__reservas:
             print(reserva)
+from clientes import Cliente
+
+from servicios import (
+    ReservaSala,
+    AlquilerEquipo,
+    AsesoriaEspecializada
+)
+
+from reservas import Reserva
+
+from gestor import SistemaGestion
+
+from excepciones import (
+    SoftwareFJError,
+    ClienteInvalidoError,
+    ServicioInvalidoError,
+    ServicioNoDisponibleError,
+    ReservaInvalidaError,
+    OperacionNoPermitidaError
+)
+
+from logger import (
+    configurar_logger,
+    registrar_evento,
+    registrar_error
+)
+
+
+def ejecutar_operacion(numero, descripcion, funcion):
+
+    print(f"\n{'=' * 65}")
+    print(f"OPERACIÓN {numero}: {descripcion}")
+    print("=" * 65)
+
+    try:
+
+        resultado = funcion()
+
+    except SoftwareFJError as error:
+
+        registrar_error(
+            f"Operación {numero} controlada: {error}"
+        )
+
+        print(f"ERROR CONTROLADO: {error}")
+
+    except Exception as error:
+
+        registrar_error(
+            f"Operación {numero} inesperada: {error}"
+        )
+
+        print(
+            f"ERROR INESPERADO: {error}"
+        )
+
+    else:
+
+        print("Operación realizada correctamente.")
+
+        if resultado is not None:
+            print(resultado)
+
+    finally:
+
+        print("Sistema estable. La aplicación continúa.")
+
+
+def main():
+
+    configurar_logger()
+
+    sistema = SistemaGestion()
+
+    print("\n")
+    print("*" * 70)
+    print("       SOFTWARE FJ - SISTEMA DE GESTIÓN")
+    print("*" * 70)
+
+    registrar_evento("Inicio del sistema Software FJ")
+
+    # ==========================================================
+    # OPERACIÓN 1
+    # ==========================================================
+
+    ejecutar_operacion(
+        1,
+        "Registrar cliente válido",
+        lambda: sistema.registrar_cliente(
+            Cliente(
+                1,
+                "Carlos Pérez",
+                "1001001001",
+                "carlos@gmail.com",
+                "3001234567"
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 2
+    # ==========================================================
+
+    ejecutar_operacion(
+        2,
+        "Registrar segundo cliente válido",
+        lambda: sistema.registrar_cliente(
+            Cliente(
+                2,
+                "Ana Rodríguez",
+                "1002002002",
+                "ana@gmail.com",
+                "3019876543"
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 3
+    # ==========================================================
+
+    ejecutar_operacion(
+        3,
+        "Intentar registrar cliente con correo inválido",
+        lambda: sistema.registrar_cliente(
+            Cliente(
+                3,
+                "Pedro López",
+                "1003003003",
+                "correo-invalido",
+                "3005555555"
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 4
+    # ==========================================================
+
+    ejecutar_operacion(
+        4,
+        "Crear servicio de reserva de sala",
+        lambda: sistema.registrar_servicio(
+            ReservaSala(
+                101,
+                "Sala Ejecutiva",
+                50000,
+                10
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 5
+    # ==========================================================
+
+    ejecutar_operacion(
+        5,
+        "Crear servicio de alquiler de equipos",
+        lambda: sistema.registrar_servicio(
+            AlquilerEquipo(
+                102,
+                "Computador Portátil",
+                30000,
+                "Portátil"
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 6
+    # ==========================================================
+
+    ejecutar_operacion(
+        6,
+        "Crear servicio de asesoría especializada",
+        lambda: sistema.registrar_servicio(
+            AsesoriaEspecializada(
+                103,
+                "Asesoría de Software",
+                80000,
+                "Desarrollo de software"
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 7
+    # ==========================================================
+
+    ejecutar_operacion(
+        7,
+        "Intentar crear servicio con precio inválido",
+        lambda: sistema.registrar_servicio(
+            ReservaSala(
+                104,
+                "Sala Incorrecta",
+                -5000,
+                10
+            )
+        )
+    )
+
+    # ==========================================================
+    # OPERACIÓN 8
+    # ==========================================================
+
+    def crear_reserva_correcta():
+
+        cliente = sistema.buscar_cliente(1)
+        servicio = sistema.buscar_servicio(101)
+
+        reserva = Reserva(
+            1001,
+            cliente,
+            servicio,
+            3
+        )
+
+        sistema.agregar_reserva(reserva)
+
+        return reserva
+
+    ejecutar_operacion(
+        8,
+        "Crear reserva correctamente",
+        crear_reserva_correcta
+    )
+
+    # ==========================================================
+    # OPERACIÓN 9
+    # ==========================================================
+
+    def confirmar_reserva():
+
+        reserva = sistema.buscar_reserva(1001)
+
+        reserva.confirmar()
+
+        return reserva
+
+    ejecutar_operacion(
+        9,
+        "Confirmar reserva",
+        confirmar_reserva
+    )
+
+    # ==========================================================
+    # OPERACIÓN 10
+    # ==========================================================
+
+    def procesar_reserva():
+
+        reserva = sistema.buscar_reserva(1001)
+
+        costo = reserva.procesar(
+            descuento=10,
+            impuesto=19
+        )
+
+        return (
+            f"Costo final de la reserva: "
+            f"${costo:,.2f}"
+        )
+
+    ejecutar_operacion(
+        10,
+        "Procesar reserva y calcular costo",
+        procesar_reserva
+    )
+
+    # ==========================================================
+    # OPERACIÓN 11
+    # ==========================================================
+
+    def reserva_cliente_inexistente():
+
+        cliente = sistema.buscar_cliente(999)
+
+        servicio = sistema.buscar_servicio(102)
+
+        return Reserva(
+            1002,
+            cliente,
+            servicio,
+            2
+        )
+
+    ejecutar_operacion(
+        11,
+        "Intentar reserva con cliente inexistente",
+        reserva_cliente_inexistente
+    )
+
+    # ==========================================================
+    # OPERACIÓN 12
+    # ==========================================================
+
+    def reservar_servicio_no_disponible():
+
+        servicio = sistema.buscar_servicio(102)
+
+        servicio.cambiar_disponibilidad(False)
+
+        cliente = sistema.buscar_cliente(2)
+
+        return Reserva(
+            1003,
+            cliente,
+            servicio,
+            2
+        )
+
+    ejecutar_operacion(
+        12,
+        "Intentar reservar servicio no disponible",
+        reservar_servicio_no_disponible
+    )
+
+    # ==========================================================
+    # OPERACIÓN 13
+    # ==========================================================
+
+    def procesar_reserva_sin_confirmar():
+
+        servicio = sistema.buscar_servicio(103)
+        servicio.cambiar_disponibilidad(True)
+
+        cliente = sistema.buscar_cliente(2)
+
+        reserva = Reserva(
+            1004,
+            cliente,
+            servicio,
+            2
+        )
+
+        sistema.agregar_reserva(reserva)
+
+        # Esta operación debe generar una excepción
+        return reserva.procesar()
+
+    ejecutar_operacion(
+        13,
+        "Intentar procesar una reserva sin confirmar",
+        procesar_reserva_sin_confirmar
+    )
+
+    # ==========================================================
+    # OPERACIÓN 14
+    # ==========================================================
+
+    def confirmar_y_procesar():
+
+        reserva = sistema.buscar_reserva(1004)
+
+        reserva.confirmar()
+
+        costo = reserva.procesar(
+            descuento=5,
+            impuesto=19
+        )
+
+        return (
+            f"Reserva procesada correctamente. "
+            f"Costo: ${costo:,.2f}"
+        )
+
+    ejecutar_operacion(
+        14,
+        "Confirmar y procesar reserva pendiente",
+        confirmar_y_procesar
+    )
+
+    # ==========================================================
+    # OPERACIÓN 15
+    # ==========================================================
+
+    def intentar_cancelar_finalizada():
+
+        reserva = sistema.buscar_reserva(1001)
+
+        return reserva.cancelar()
+
+    ejecutar_operacion(
+        15,
+        "Intentar cancelar reserva finalizada",
+        intentar_cancelar_finalizada
+    )
+
+    # ==========================================================
+    # MOSTRAR INFORMACIÓN
+    # ==========================================================
+
+    sistema.mostrar_clientes()
+
+    sistema.mostrar_servicios()
+
+    sistema.mostrar_reservas()
+
+    registrar_evento(
+        "Finalización correcta del programa"
+    )
+
+    print("\n")
+    print("*" * 70)
+    print("El programa terminó correctamente.")
+    print("Revise logs/sistema.log para consultar los eventos.")
+    print("*" * 70)
+
+
+if __name__ == "__main__":
+    main()
