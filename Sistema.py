@@ -409,3 +409,140 @@ class AsesoriaEspecializada(Servicio):
             f"Asesoría especializada en "
             f"{self.__especialidad}."
         )
+
+from excepciones import (
+    ReservaInvalidaError,
+    ServicioNoDisponibleError,
+    OperacionNoPermitidaError
+)
+
+
+class Reserva:
+
+    ESTADOS_VALIDOS = [
+        "PENDIENTE",
+        "CONFIRMADA",
+        "CANCELADA",
+        "FINALIZADA"
+    ]
+
+    def __init__(
+        self,
+        identificador,
+        cliente,
+        servicio,
+        duracion
+    ):
+
+        if cliente is None:
+            raise ReservaInvalidaError(
+                "La reserva necesita un cliente."
+            )
+
+        if servicio is None:
+            raise ReservaInvalidaError(
+                "La reserva necesita un servicio."
+            )
+
+        if duracion <= 0:
+            raise ReservaInvalidaError(
+                "La duración debe ser mayor que cero."
+            )
+
+        if not servicio.disponible:
+            raise ServicioNoDisponibleError(
+                "El servicio seleccionado no está disponible."
+            )
+
+        self.__identificador = identificador
+        self.__cliente = cliente
+        self.__servicio = servicio
+        self.__duracion = duracion
+        self.__estado = "PENDIENTE"
+        self.__costo = 0
+
+    @property
+    def identificador(self):
+        return self.__identificador
+
+    @property
+    def cliente(self):
+        return self.__cliente
+
+    @property
+    def servicio(self):
+        return self.__servicio
+
+    @property
+    def duracion(self):
+        return self.__duracion
+
+    @property
+    def estado(self):
+        return self.__estado
+
+    @property
+    def costo(self):
+        return self.__costo
+
+    def confirmar(self):
+
+        if self.__estado != "PENDIENTE":
+            raise OperacionNoPermitidaError(
+                "Solo se pueden confirmar reservas pendientes."
+            )
+
+        self.__estado = "CONFIRMADA"
+
+    def cancelar(self):
+
+        if self.__estado == "FINALIZADA":
+            raise OperacionNoPermitidaError(
+                "No se puede cancelar una reserva finalizada."
+            )
+
+        if self.__estado == "CANCELADA":
+            raise OperacionNoPermitidaError(
+                "La reserva ya está cancelada."
+            )
+
+        self.__estado = "CANCELADA"
+
+    def procesar(self, descuento=0, impuesto=19):
+
+        if self.__estado != "CONFIRMADA":
+            raise OperacionNoPermitidaError(
+                "La reserva debe estar confirmada antes de procesarse."
+            )
+
+        try:
+
+            self.__costo = self.__servicio.calcular_costo(
+                self.__duracion,
+                descuento,
+                impuesto
+            )
+
+        except Exception as error:
+
+            raise ReservaInvalidaError(
+                "No fue posible calcular el costo de la reserva."
+            ) from error
+
+        self.__estado = "FINALIZADA"
+
+        return self.__costo
+
+    def mostrar_informacion(self):
+
+        return (
+            f"Reserva #{self.identificador} | "
+            f"Cliente: {self.cliente.nombre} | "
+            f"Servicio: {self.servicio.nombre} | "
+            f"Duración: {self.duracion} | "
+            f"Estado: {self.estado} | "
+            f"Costo: ${self.costo:,.2f}"
+        )
+
+    def __str__(self):
+        return self.mostrar_informacion()
