@@ -546,3 +546,123 @@ class Reserva:
 
     def __str__(self):
         return self.mostrar_informacion()
+from excepciones import (
+    ClienteNoEncontradoError,
+    ReservaNoEncontradaError,
+    ServicioNoDisponibleError
+)
+
+from logger import registrar_evento
+
+
+class SistemaGestion:
+
+    def __init__(self):
+
+        self.__clientes = []
+        self.__servicios = []
+        self.__reservas = []
+
+    @property
+    def clientes(self):
+        return self.__clientes
+
+    @property
+    def servicios(self):
+        return self.__servicios
+
+    @property
+    def reservas(self):
+        return self.__reservas
+
+    def registrar_cliente(self, cliente):
+
+        self.__clientes.append(cliente)
+
+        registrar_evento(
+            f"Cliente registrado: {cliente.identificador}"
+        )
+
+    def registrar_servicio(self, servicio):
+
+        self.__servicios.append(servicio)
+
+        registrar_evento(
+            f"Servicio registrado: {servicio.identificador}"
+        )
+
+    def buscar_cliente(self, identificador):
+
+        for cliente in self.__clientes:
+
+            if cliente.identificador == identificador:
+                return cliente
+
+        raise ClienteNoEncontradoError(
+            f"No existe el cliente {identificador}."
+        )
+
+    def buscar_servicio(self, identificador):
+
+        for servicio in self.__servicios:
+
+            if servicio.identificador == identificador:
+                return servicio
+
+        raise ValueError(
+            f"No existe el servicio {identificador}."
+        )
+
+    def agregar_reserva(self, reserva):
+
+        self.__reservas.append(reserva)
+
+        registrar_evento(
+            f"Reserva registrada: {reserva.identificador}"
+        )
+
+    def buscar_reserva(self, identificador):
+
+        for reserva in self.__reservas:
+
+            if reserva.identificador == identificador:
+                return reserva
+
+        raise ReservaNoEncontradaError(
+            f"No existe la reserva {identificador}."
+        )
+
+    def mostrar_clientes(self):
+
+        print("\n========== CLIENTES ==========")
+
+        if not self.__clientes:
+            print("No hay clientes registrados.")
+            return
+
+        for cliente in self.__clientes:
+            print(cliente)
+
+    def mostrar_servicios(self):
+
+        print("\n========== SERVICIOS ==========")
+
+        if not self.__servicios:
+            print("No hay servicios registrados.")
+            return
+
+        for servicio in self.__servicios:
+
+            print(servicio)
+            print("   ", servicio.describir())
+
+    def mostrar_reservas(self):
+
+        print("\n========== RESERVAS ==========")
+
+        if not self.__reservas:
+            print("No hay reservas registradas.")
+            return
+
+        for reserva in self.__reservas:
+            print(reserva)
